@@ -163,6 +163,48 @@ st.pyplot(fig2)
 st.divider()
 
 # -----------------------------
+# 일별 평균기온 분포 (히스토그램)
+# -----------------------------
+st.subheader("📊 일별 평균기온 분포")
+
+daily_view = df[(df["연도"] >= year_range[0]) & (df["연도"] <= year_range[1])]
+
+bin_width = st.slider("구간(bin) 폭 선택 (℃)", min_value=1, max_value=5, value=2, step=1)
+
+min_t = np.floor(daily_view["평균기온"].min())
+max_t = np.ceil(daily_view["평균기온"].max())
+bins = np.arange(min_t, max_t + bin_width, bin_width)
+
+fig3, ax3 = plt.subplots(figsize=(11, 5))
+counts, edges, patches = ax3.hist(
+    daily_view["평균기온"], bins=bins, color="#F4B942", edgecolor="white"
+)
+
+mean_t = daily_view["평균기온"].mean()
+median_t = daily_view["평균기온"].median()
+ax3.axvline(mean_t, color="#C44E52", linestyle="--", linewidth=2, label=f"평균 {mean_t:.1f}℃")
+ax3.axvline(median_t, color="#4C72B0", linestyle=":", linewidth=2, label=f"중앙값 {median_t:.1f}℃")
+
+ax3.set_xlabel("일별 평균기온 (℃)")
+ax3.set_ylabel("일수")
+ax3.set_title(f"{year_range[0]}년 ~ {year_range[1]}년 일별 평균기온 분포")
+ax3.legend(loc="upper right")
+ax3.grid(alpha=0.3)
+
+st.pyplot(fig3)
+
+# 어느 구간에 가장 많은 날이 몰려 있는지 안내
+peak_idx = np.argmax(counts)
+peak_start, peak_end = edges[peak_idx], edges[peak_idx + 1]
+st.caption(
+    f"선택한 기간 동안 총 **{len(daily_view):,}일**의 기록 중, "
+    f"가장 많은 날이 몰려 있는 구간은 **{peak_start:.0f}℃ ~ {peak_end:.0f}℃**로 "
+    f"{int(counts[peak_idx]):,}일({counts[peak_idx]/len(daily_view)*100:.1f}%)이 여기에 해당해요."
+)
+
+st.divider()
+
+# -----------------------------
 # 원본 데이터 (연도별 요약) 보기
 # -----------------------------
 with st.expander("📋 연도별 데이터 표로 보기"):
